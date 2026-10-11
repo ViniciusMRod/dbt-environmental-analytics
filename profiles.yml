@@ -1,0 +1,12 @@
+environmental_analytics:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('DBT_PG_HOST', 'localhost') }}"
+      port: "{{ env_var('DBT_PG_PORT', '5434') | int }}"
+      user: "{{ env_var('DBT_PG_USER', 'postgres') }}"
+      password: "{{ env_var('DBT_PG_PASSWORD', 'dbt') }}"
+      dbname: "{{ env_var('DBT_PG_DBNAME', 'analytics') }}"
+      schema: "{{ env_var('DBT_PG_SCHEMA', 'dbt_dev') }}"
+      threads: 4

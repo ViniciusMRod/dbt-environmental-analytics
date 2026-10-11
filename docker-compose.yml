@@ -1,0 +1,19 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: dbt_postgres
+    environment:
+      POSTGRES_USER: ${DBT_PG_USER:-postgres}
+      POSTGRES_PASSWORD: ${DBT_PG_PASSWORD:-dbt}
+      POSTGRES_DB: ${DBT_PG_DBNAME:-analytics}
+    ports:
+      - "${DBT_PG_PORT:-5434}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DBT_PG_USER:-postgres}"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  pgdata:
