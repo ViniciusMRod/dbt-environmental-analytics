@@ -1,0 +1,23 @@
+version: 2
+
+seeds:
+  - name: raw_water_quality
+    description: "SMOKE TEST - placeholder data. Replace with a real Water Quality Portal extract."
+    config:
+      column_types:
+        sample_id: varchar(20)
+        collected_at: date
+        site_code: varchar(20)
+        " parameter ": varchar(50)
+        result_value: numeric(12,4)
+        unit: varchar(20)
+  - name: raw_air_quality
+    description: "SMOKE TEST - placeholder data. Replace with a real OpenAQ extract."
+    config:
+      column_types:
+        sample_id: varchar(20)
+        collected_at: date
+        site_code: varchar(20)
+        " parameter ": varchar(50)
+        result_value: numeric(12,4)
+        unit: varchar(20)

@@ -1,0 +1,7 @@
+sample_id,collected_at,site_code, parameter ,result_value,unit
+W-001,2025-01-14,PZ-01,  Nitrate ,2.41,mg/L
+W-002,2025-01-14,PZ-02,Nitrate,0.87,mg/L
+W-003,2025-02-11,PZ-01,Fluoride,1.02,mg/L
+W-004,2025-03-09,PZ-03, Nitrate,3.55,mg/L
+W-005,2025-03-09,PZ-02,Fluoride,0.44,mg/L
+W-006,2025-04-20,PZ-01,Nitrate,4.10,mg/L
