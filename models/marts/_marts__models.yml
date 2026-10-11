@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: fct_measurements
+    description: >
+      Cross-matrix fact table: one row per measurement, unifying the
+      environmental matrices. Materialized as an incremental model using
+      the delete+insert strategy.
+    columns:
+      - name: sample_id
+        description: "Measurement key in the source system."
+        data_tests: [unique, not_null]
+      - name: matrix
+        description: "Environmental matrix of the measurement."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['water', 'air']
+      - name: result_value
+        description: "Measured value, in the unit reported by the source."
+        data_tests: [not_null]
