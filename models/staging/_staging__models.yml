@@ -2,14 +2,29 @@ version: 2
 
 models:
   - name: stg_water_quality
-    description: "1:1 cleanup of the water source: trim, case normalization, standardized column names."
+    description: >
+      Water Quality Portal results for Lucas County, OH (water media only).
+      Grain: one row per measurement result. 1:1 cleanup of the source: trim,
+      case normalization, standardized names, unit normalization. Non-detects
+      keep a null value and carry their detection condition.
     columns:
       - name: sample_id
-        description: "Sample identifier in the source system."
+        description: "WQP result identifier (the grain key)."
         data_tests: [unique, not_null]
       - name: collected_date
         description: "Date the sample was collected."
         data_tests: [not_null]
+      - name: site_code
+        description: "WQP monitoring location identifier."
+        data_tests: [not_null]
+      - name: parameter
+        description: "Measured characteristic, lowercased."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['ph', 'dissolved oxygen (do)', 'specific conductance', 'turbidity', 'nitrate', 'phosphorus', 'iron', 'manganese']
+      - name: result_value
+        description: "Measured value. Null when the result was not quantified (see detection_condition)."
       - name: matrix
         description: "Environmental matrix of the sample."
         data_tests:

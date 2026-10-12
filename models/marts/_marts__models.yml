@@ -18,5 +18,4 @@ models:
               arguments:
                 values: ['water', 'air']
       - name: result_value
-        description: "Measured value, in the unit reported by the source."
-        data_tests: [not_null]
+        description: "Measured value in the unit reported by the source. Null for non-detects and results below the quantification limit."
