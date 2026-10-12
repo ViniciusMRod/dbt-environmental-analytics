@@ -1,16 +1,31 @@
 version: 2
 
 seeds:
-  - name: raw_water_quality
-    description: "SMOKE TEST - placeholder data. Replace with a real Water Quality Portal extract."
+  - name: raw_wqp_results
+    description: "Water Quality Portal extract: Lucas County, OH, water media only, 2020-2025 (WQX 3.0 basicPhysChem profile). Produced by scripts/download_wqp.py."
     config:
       column_types:
-        sample_id: varchar(20)
-        collected_at: date
-        site_code: varchar(20)
-        " parameter ": varchar(50)
-        result_value: numeric(12,4)
-        unit: varchar(20)
+        org_identifier: text
+        location_identifier: text
+        location_name: text
+        location_type: text
+        location_latitudestandardized: numeric(11,8)
+        location_longitudestandardized: numeric(11,8)
+        location_huceightdigitcode: text
+        activity_activityidentifier: text
+        activity_startdate: date
+        activity_starttime: text
+        activity_media: text
+        result_characteristic: text
+        result_samplefraction: text
+        result_measureidentifier: text
+        result_measure: numeric(18,6)
+        result_measureunit: text
+        result_resultdetectioncondition: text
+        result_measurequalifiercode: text
+        detectionlimit_measurea: text
+        detectionlimit_measureunita: text
+        providername: text
   - name: raw_air_quality
     description: "SMOKE TEST - placeholder data. Replace with a real OpenAQ extract."
     config:
