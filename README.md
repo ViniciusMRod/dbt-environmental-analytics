@@ -34,7 +34,7 @@ dbt build
 ```
 
 `dbt build` runs seeds, models and tests in a single pass. Expected output for
-this version: `PASS=19 ERROR=0`.
+this version: `PASS=20 ERROR=0`.
 
 Documentation and lineage graph:
 
@@ -72,7 +72,8 @@ seeds (CSV)  →  staging (view, 1:1 per source)  →  marts (table/incremental)
 
 - **`seeds/`** — sources are loaded as static CSVs via `dbt seed`. This is a
   deliberate decision: building a custom ingestion pipeline is a different skill
-  and would dilute the focus on dbt.
+  and would dilute the focus on dbt. `scripts/download_wqp.py` documents how the
+  water seed was produced; it is not an ingestion pipeline.
 - **`models/staging/`** — one model per source. Cleanup only: trim, casing,
   renaming, typing. No business logic.
 - **`models/marts/`** — cross-matrix joins and aggregation. `fct_measurements`
@@ -99,7 +100,7 @@ dbt-postgres` pulls the 2.0 alpha and the project fails at parse time with
   the source.
 - **Dates as text.** Without `column_types` in `_seeds.yml`, dbt creates every
   column as `text`, and the incremental filter ends up comparing a string to a
-  date.
+  date.git stat
 - **Incremental model after a data swap.** `fct_measurements` only loads rows with
   a `collected_date` greater than the latest one already loaded. After replacing a
   seed, run `dbt build --full-refresh`, otherwise older rows are skipped silently
