@@ -1,0 +1,53 @@
+# ADR 002: Grain of the fact table
+
+- Status: Accepted for water. Open for air (see Consequences).
+- Date: 2026-10-12
+
+## Context
+
+The WQP extract has one row per measurement result. One sampling activity produces
+several rows (one per parameter), and the same parameter can appear more than once
+within an activity: 436 activity + parameter pairs have more than one result. The
+extract does not keep the columns that would explain why (analytical method), so the
+cause is not established. `result_measureidentifier` is unique across all 2,980 rows.
+
+## Decision
+
+The grain of `fct_measurements` is one row per measurement result, identified by the
+WQP result identifier (tested with `unique` and `not_null`). A result belongs to one
+monitoring location, one sampling activity and one parameter.
+
+Planned star schema:
+
+- Fact `fct_measurements`: result key, date, site key, parameter key, result value,
+  unit, detection condition, `is_quantified`, data provider, activity id (degenerate
+  dimension).
+- Dimension `dim_site`: site code, name, type, latitude, longitude, HUC8 watershed.
+- Dimension `dim_parameter`: parameter name. The unit stays on the fact, not on the
+  dimension, because the same parameter arrives in different units (turbidity as NTU,
+  FNU and NTRU, which are not strictly interchangeable).
+
+Non-detects keep a null `result_value`, their detection condition and an
+`is_quantified` flag. 108 of 2,980 results (3.6%) have no numeric value, and 103 of
+those are "Not Detected".
+
+## Alternatives considered
+
+- Grain at sampling activity (one row per visit, parameters as columns): easier to
+  read, but 436 activity + parameter pairs would collapse several results into one,
+  and detection conditions would be lost.
+- Substitute half the detection limit for non-detects, a common convention in
+  environmental work. It is feasible here, since all 108 non-detects carry a detection
+  limit (only 491 of 2,980 rows do overall). Rejected for v1 because it puts invented
+  numbers next to measured ones. If needed later, it should be a separate derived
+  column, not a replacement of `result_value`.
+
+## Consequences
+
+- Air quality from OpenAQ will probably not share this grain (typically a reading per
+  location, parameter and timestamp). Whether both matrices fit one fact table or need
+  separate facts is decided when the air extract is chosen.
+- `sample_id` in staging holds the result identifier. It is renamed to `result_id`
+  when the marts become a star schema.
+- Averages across results of the same parameter and day may mix duplicates of unknown
+  origin until the cause of the 436 repeated pairs is understood.
