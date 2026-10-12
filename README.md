@@ -100,3 +100,10 @@ dbt-postgres` pulls the 2.0 alpha and the project fails at parse time with
 - **Dates as text.** Without `column_types` in `_seeds.yml`, dbt creates every
   column as `text`, and the incremental filter ends up comparing a string to a
   date.
+- **Incremental model after a data swap.** `fct_measurements` only loads rows with
+  a `collected_date` greater than the latest one already loaded. After replacing a
+  seed, run `dbt build --full-refresh`, otherwise older rows are skipped silently
+  and the build still passes.
+- **WQP non-detects.** About 3.6% of water results have no numeric value (mostly
+  "Not Detected"). They are kept with a null value and a detection condition, not
+  imputed.
