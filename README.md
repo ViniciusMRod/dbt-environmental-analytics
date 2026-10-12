@@ -4,9 +4,10 @@ A dbt portfolio project built on multi-matrix environmental data (groundwater,
 surface water, air). It runs 100% locally: PostgreSQL in Docker, dbt Core via pip.
 Anyone can clone it and run it in a few commands, with no cloud account and no trial.
 
-> **Current state:** validated skeleton running on smoke-test data. The seeds in
-> `seeds/` are placeholders that prove the environment works. They will be replaced
-> by real public sources (Water Quality Portal, OpenAQ).
+> **Current state:** water quality runs on a real extract from the Water Quality
+> Portal (Lucas County, OH, water media, 2020-2025, WQX 3.0 `basicPhysChem`
+> profile, pulled 2026-10-12 with `scripts/download_wqp.py`). The air quality seed
+> is still a smoke-test placeholder and will be replaced by an OpenAQ extract.
 
 > **Note:** this is a multi-source composition built for portfolio purposes, not
 > an integrated monitoring network from a single client. The sources come from
