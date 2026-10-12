@@ -7,8 +7,10 @@
 
 The WQP extract has one row per measurement result. One sampling activity produces
 several rows (one per parameter), and the same parameter can appear more than once
-within an activity: 436 activity + parameter pairs have more than one result. The
-extract does not keep the columns that would explain why (analytical method), so the
+within an activity: 436 activity + parameter pairs have more than one result. 
+Sample fraction explains 98 of those pairs (for example, filtered vs total 
+recoverable iron). The other 338 share the same fraction. The extract does not keep 
+the columns that would explain them (activity type, analytical method), so their 
 cause is not established. `result_measureidentifier` is unique across all 2,980 rows.
 
 ## Decision
@@ -23,9 +25,11 @@ Planned star schema:
   unit, detection condition, `is_quantified`, data provider, activity id (degenerate
   dimension).
 - Dimension `dim_site`: site code, name, type, latitude, longitude, HUC8 watershed.
-- Dimension `dim_parameter`: parameter name. The unit stays on the fact, not on the
-  dimension, because the same parameter arrives in different units (turbidity as NTU,
-  FNU and NTRU, which are not strictly interchangeable).
+- Dimension `dim_parameter`: parameter name and sample fraction. The fraction changes
+  what a value means (filtered, total recoverable and dissolved iron are different
+  measurements), so it belongs to the parameter. The unit stays on the fact, because
+  the same parameter arrives in different units (turbidity as NTU, FNU and NTRU, which
+  are not strictly interchangeable).
 
 Non-detects keep a null `result_value`, their detection condition and an
 `is_quantified` flag. 108 of 2,980 results (3.6%) have no numeric value, and 103 of
@@ -51,3 +55,5 @@ those are "Not Detected".
   when the marts become a star schema.
 - Averages across results of the same parameter and day may mix duplicates of unknown
   origin until the cause of the 436 repeated pairs is understood.
+- Results must not be averaged across sample fractions. `sample_fraction` is added to
+  staging in the next iteration.
