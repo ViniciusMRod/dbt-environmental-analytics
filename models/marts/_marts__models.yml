@@ -19,3 +19,27 @@ models:
                 values: ['water', 'air']
       - name: result_value
         description: "Measured value in the unit reported by the source. Null for non-detects and results below the quantification limit."
+  
+  - name: dim_site
+    description: "One row per WQP monitoring location in Lucas County, OH."
+    columns:
+      - name: site_code
+        description: "WQP monitoring location identifier."
+        data_tests: [unique, not_null]
+      - name: huc8
+        description: "8-digit hydrologic unit code (watershed). Stored as text to keep the leading zero."
+
+  - name: dim_parameter
+    description: >
+      One row per parameter and sample fraction. Sample fraction is part of the
+      parameter because filtered, total recoverable and dissolved results are
+      different measurements.
+    columns:
+      - name: parameter_key
+        description: "md5 hash of parameter and sample_fraction."
+        data_tests: [unique, not_null]
+      - name: parameter
+        data_tests: [not_null]
+      - name: sample_fraction
+        description: "'not reported' when the source leaves it empty."
+        data_tests: [not_null]
