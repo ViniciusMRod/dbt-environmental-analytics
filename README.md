@@ -34,7 +34,7 @@ dbt build
 ```
 
 `dbt build` runs seeds, models and tests in a single pass. Expected output for
-this version: `PASS=20 ERROR=0`.
+this version: `PASS=33 ERROR=0`.
 
 Documentation and lineage graph:
 
@@ -76,10 +76,22 @@ seeds (CSV)  →  staging (view, 1:1 per source)  →  marts (table/incremental)
   water seed was produced; it is not an ingestion pipeline.
 - **`models/staging/`** — one model per source. Cleanup only: trim, casing,
   renaming, typing. No business logic.
-- **`models/marts/`** — cross-matrix joins and aggregation. `fct_measurements`
-  is incremental (`delete+insert` with a `unique_key`).
+- **`models/marts/`** — star schema. `fct_measurements` (grain: one row per
+  measurement result) points to `dim_site` and `dim_parameter` (parameter +
+  sample fraction). The fact is incremental (`delete+insert` with a `unique_key`).
+  Air quality stays in staging until its grain is decided (ADR 002).
 - **`tests/`** — singular tests written in SQL. Generic tests (`unique`,
   `not_null`, `accepted_values`) live in the `.yml` files next to the models.
+
+### Reading the lineage graph
+
+- **No `source()` in the DAG.** Sources are dbt seeds, so models use `ref()`.
+`source()` is for tables loaded outside dbt, which ADR 001 ruled out.
+- **`dim_site` has no edge to the fact.** The fact keeps `site_code` as a
+natural key, and a `relationships` test enforces that every `site_code`
+exists in `dim_site`. dbt docs do not draw test dependencies.
+- **The air branch ends at staging** on purpose: air quality is a placeholder
+until a real OpenAQ extract is added.
 
 ## Why dbt Core 1.x and not Fusion
 

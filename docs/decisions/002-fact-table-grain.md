@@ -57,3 +57,12 @@ those are "Not Detected".
   origin until the cause of the 436 repeated pairs is understood.
 - Results must not be averaged across sample fractions. `sample_fraction` is added to
   staging in the next iteration.
+
+## Update (2026-10-15): implemented
+
+- `fct_measurements`, `dim_site` (51 rows) and `dim_parameter` (17 rows) are built
+  as described above. `relationships` tests link the fact to both dimensions.
+- `sample_id` was renamed to `result_id` in staging.
+- `sample_fraction` is in staging and in `dim_parameter`, with "not reported"
+  when the source leaves it empty (49% of results).
+- Air quality was removed from the fact. It returns once its grain is decided.
