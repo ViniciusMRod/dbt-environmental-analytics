@@ -8,7 +8,7 @@ models:
       case normalization, standardized names, unit normalization. Non-detects
       keep a null value and carry their detection condition.
     columns:
-      - name: sample_id
+      - name: result_id
         description: "WQP result identifier (the grain key)."
         data_tests: [unique, not_null]
       - name: collected_date

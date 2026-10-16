@@ -8,9 +8,8 @@ renamed as (
 
     select
         -- Grain: one row per measurement result (one parameter, at one site,
-        -- in one sampling activity). sample_id holds the WQP result identifier;
-        -- it is renamed to result_id when the marts become a star schema.
-        result_measureidentifier                         as sample_id,
+        -- in one sampling activity).
+        result_measureidentifier                         as result_id,
         activity_activityidentifier                      as activity_id,
         activity_startdate                               as collected_date,
         upper(trim(location_identifier))                 as site_code,

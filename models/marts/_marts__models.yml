@@ -3,23 +3,33 @@ version: 2
 models:
   - name: fct_measurements
     description: >
-      Cross-matrix fact table: one row per measurement, unifying the
-      environmental matrices. Materialized as an incremental model using
-      the delete+insert strategy.
+      Water quality fact. Grain: one row per measurement result (one parameter,
+      at one monitoring site, in one sampling activity). Incremental with the
+      delete+insert strategy. Air quality is out until its grain is decided
+      (see ADR 002).
     columns:
-      - name: sample_id
-        description: "Measurement key in the source system."
+      - name: result_id
+        description: "WQP result identifier (the grain key)."
         data_tests: [unique, not_null]
-      - name: matrix
-        description: "Environmental matrix of the measurement."
+      - name: collected_date
+        data_tests: [not_null]
+      - name: site_code
         data_tests:
           - not_null
-          - accepted_values:
+          - relationships:
               arguments:
-                values: ['water', 'air']
+                to: ref('dim_site')
+                field: site_code
+      - name: parameter_key
+        data_tests:
+          - not_null
+          - relationships:
+              arguments:
+                to: ref('dim_parameter')
+                field: parameter_key
       - name: result_value
         description: "Measured value in the unit reported by the source. Null for non-detects and results below the quantification limit."
-  
+
   - name: dim_site
     description: "One row per WQP monitoring location in Lucas County, OH."
     columns:
