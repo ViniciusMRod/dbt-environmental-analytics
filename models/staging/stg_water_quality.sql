@@ -21,6 +21,7 @@ renamed as (
         location_huceightdigitcode                       as huc8,
         lower(trim(result_characteristic))               as parameter,
         result_measure                                   as result_value,
+        coalesce(nullif(nullif(lower(trim(result_samplefraction)), ''), 'none'), 'not reported') as sample_fraction,
         case
             when lower(trim(result_characteristic)) = 'ph' then 'standard units'
             when lower(trim(result_measureunit)) in ('umho/cm', 'us/cm') then 'us/cm'

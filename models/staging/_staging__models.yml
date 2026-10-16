@@ -23,6 +23,13 @@ models:
           - accepted_values:
               arguments:
                 values: ['ph', 'dissolved oxygen (do)', 'specific conductance', 'turbidity', 'nitrate', 'phosphorus', 'iron', 'manganese']
+      - name: sample_fraction
+        description: "Sample fraction (for example filtered, total recoverable, dissolved). 'not reported' when the source leaves it empty."
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: ['not reported', 'unfiltered', 'total', 'filtered field and/or lab', 'total recoverable', 'dissolved']
       - name: result_value
         description: "Measured value. Null when the result was not quantified (see detection_condition)."
       - name: matrix
