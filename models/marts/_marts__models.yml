@@ -29,6 +29,14 @@ models:
                 field: parameter_key
       - name: result_value
         description: "Measured value in the unit reported by the source. Null for non-detects and results below the quantification limit."
+      - name: data_provider
+        description: "Organization that published the result to the WQP."
+        data_tests:
+          - accepted_values:
+              arguments:
+                values: ['storet', 'usgs']
+              config:
+                severity: warn
 
   - name: dim_site
     description: "One row per WQP monitoring location in Lucas County, OH."
