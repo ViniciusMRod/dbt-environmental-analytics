@@ -15,6 +15,7 @@ seeds:
         activity_activityidentifier: text
         activity_startdate: date
         activity_starttime: text
+        labinfo_analysisstartdate: text
         activity_media: text
         result_characteristic: text
         result_samplefraction: text

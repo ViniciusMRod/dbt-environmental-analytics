@@ -6,6 +6,7 @@ the CSV it produces is committed and loaded with `dbt seed`.
 """
 import csv
 import io
+import sys
 import urllib.parse
 import urllib.request
 from collections import Counter
@@ -28,7 +29,7 @@ KEEP = [
     "Org_Identifier", "Location_Identifier", "Location_Name", "Location_Type",
     "Location_LatitudeStandardized", "Location_LongitudeStandardized",
     "Location_HUCEightDigitCode", "Activity_ActivityIdentifier",
-    "Activity_StartDate", "Activity_StartTime", "Activity_Media",
+    "Activity_StartDate", "Activity_StartTime", "LabInfo_AnalysisStartDate", "Activity_Media",
     "Result_Characteristic", "Result_SampleFraction", "Result_MeasureIdentifier",
     "Result_Measure", "Result_MeasureUnit", "Result_ResultDetectionCondition",
     "Result_MeasureQualifierCode", "DetectionLimit_MeasureA",
@@ -55,6 +56,17 @@ def main() -> None:
     print("media in response:", dict(Counter(r["Activity_Media"] for r in rows)))
     rows = [r for r in rows if r["Activity_Media"] == "Water"]
     print(f"kept {len(rows)} water rows (sediment and other media are out of scope for v1)")
+
+    existing = 0
+    if OUT.exists():
+        with OUT.open(newline="", encoding="utf-8") as f:
+            existing = max(sum(1 for _ in csv.reader(f)) - 1, 0)
+    print("providers:", dict(Counter(r["ProviderName"] for r in rows)))
+    if existing and len(rows) < existing and "--force" not in sys.argv:
+        raise SystemExit(
+            f"Refusing to overwrite: response has {len(rows)} rows, "
+            f"current seed has {existing}. Run again later, or pass --force."
+        )
 
     with OUT.open("w", newline="", encoding="utf-8") as f:
         writer = csv.writer(f)
