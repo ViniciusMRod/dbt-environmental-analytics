@@ -14,6 +14,12 @@ models:
       - name: collected_date
         description: "Date the sample was collected."
         data_tests: [not_null]
+      - name: analysis_date
+        description: "Date the laboratory analysis started. Null for field measurements. The source mixes ISO dates and a Java-style date string; both are parsed here."
+        data_tests:
+          - analysis_not_before_collection:
+              arguments:
+                collected_column: collected_date
       - name: site_code
         description: "WQP monitoring location identifier."
         data_tests: [not_null]

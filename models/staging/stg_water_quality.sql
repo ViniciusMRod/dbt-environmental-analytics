@@ -12,6 +12,12 @@ renamed as (
         result_measureidentifier                         as result_id,
         activity_activityidentifier                      as activity_id,
         activity_startdate                               as collected_date,
+        case
+            when labinfo_analysisstartdate ~ '^\d{4}-\d{2}-\d{2}'
+                then labinfo_analysisstartdate::date
+            when labinfo_analysisstartdate ~ '^[A-Za-z]{3} [A-Za-z]{3} \d{2} '
+                then to_date(substring(labinfo_analysisstartdate from 5 for 6) || ' ' || right(labinfo_analysisstartdate, 4), 'Mon DD YYYY')
+        end                                              as analysis_date,
         upper(trim(location_identifier))                 as site_code,
         trim(location_name)                              as site_name,
         lower(trim(location_type))                       as site_type,
