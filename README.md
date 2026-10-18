@@ -34,7 +34,7 @@ dbt build
 ```
 
 `dbt build` runs seeds, models and tests in a single pass. Expected output for
-this version: `PASS=33 ERROR=0`.
+this version: `PASS=35 ERROR=0`.
 
 Documentation and lineage graph:
 

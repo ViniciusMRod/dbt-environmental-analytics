@@ -47,3 +47,9 @@ about 0.7 MB (STORET 1,543 rows, USGS 1,437).
   model needs `dbt build --full-refresh`.
 - The project is a multi-source composition for portfolio purposes, not a single
   integrated monitoring network.
+- The portal intermittently returns an incomplete response for the same query:
+  all STORET results but only 97 of 1,437 USGS results (1,640 vs 2,980 water
+  rows). The partial response is a strict subset of the complete one. Requesting
+  the USGS provider alone (`providers=NWIS`) also returns 97 rows, so per-provider
+  requests do not help. The cause is not established. `scripts/download_wqp.py`
+  refuses to overwrite the seed with a smaller response.
