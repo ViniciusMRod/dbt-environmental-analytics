@@ -1,63 +1,91 @@
 version: 2
 
 models:
-  - name: fct_measurements
-    description: >
-      Water quality fact. Grain: one row per measurement result (one parameter,
-      at one monitoring site, in one sampling activity). Incremental with the
-      delete+insert strategy. Air quality is out until its grain is decided
-      (see ADR 002).
-    columns:
-      - name: result_id
-        description: "WQP result identifier (the grain key)."
-        data_tests: [unique, not_null]
-      - name: collected_date
-        data_tests: [not_null]
-      - name: site_code
-        data_tests:
-          - not_null
-          - relationships:
-              arguments:
-                to: ref('dim_site')
-                field: site_code
-      - name: parameter_key
-        data_tests:
-          - not_null
-          - relationships:
-              arguments:
-                to: ref('dim_parameter')
-                field: parameter_key
-      - name: result_value
-        description: "Measured value in the unit reported by the source. Null for non-detects and results below the quantification limit."
-      - name: data_provider
-        description: "Organization that published the result to the WQP."
-        data_tests:
-          - accepted_values:
-              arguments:
-                values: ['storet', 'usgs']
-              config:
-                severity: warn
+    - name: fct_measurements
+      description: >
+        Water quality fact. Grain: one row per measurement result (one parameter,
+        at one monitoring site, in one sampling activity). Incremental with the
+        delete+insert strategy. Air quality is out until its grain is decided
+        (see ADR 002).
+      config:
+        contract:
+          enforced: true
+      columns:
+        - name: result_id
+          data_type: text
+          description: "WQP result identifier (the grain key)."
+          constraints:
+            - type: not_null
+            - type: primary_key
+          data_tests: [unique, not_null]
+        - name: collected_date
+          data_type: date
+          constraints:
+            - type: not_null
+          data_tests: [not_null]
+        - name: site_code
+          data_type: text
+          constraints:
+            - type: not_null
+          data_tests:
+            - not_null
+            - relationships:
+                arguments:
+                  to: ref('dim_site')
+                  field: site_code
+        - name: parameter_key
+          data_type: text
+          constraints:
+            - type: not_null
+          data_tests:
+            - not_null
+            - relationships:
+                arguments:
+                  to: ref('dim_parameter')
+                  field: parameter_key
+        - name: result_value
+          data_type: numeric(18,6)
+          description: "Measured value in the unit reported by the source. Null for non-detects and results below the quantification limit."
+        - name: unit
+          data_type: text
+        - name: detection_condition
+          data_type: text
+        - name: is_quantified
+          data_type: boolean
+        - name: data_provider
+          data_type: text
+          description: "Organization that published the result to the WQP."
+          data_tests:
+            - accepted_values:
+                arguments:
+                  values: ['storet', 'usgs']
+                config:
+                  severity: warn
+        - name: activity_id
+          data_type: text
+        - name: dbt_loaded_at
+          data_type: timestamp with time zone
 
-  - name: dim_site
-    description: "One row per WQP monitoring location in Lucas County, OH."
-    columns:
-      - name: site_code
-        description: "WQP monitoring location identifier."
-        data_tests: [unique, not_null]
-      - name: huc8
-        description: "8-digit hydrologic unit code (watershed). Stored as text to keep the leading zero."
+    - name: dim_site
+      description: "One row per WQP monitoring location in Lucas County, OH."
+      columns:
+        - name: site_code
+          description: "WQP monitoring location identifier."
+          data_tests: [unique, not_null]
+        - name: huc8
+          description: "8-digit hydrologic unit code (watershed). Stored as text to keep the leading zero."
 
-  - name: dim_parameter
-    description: >
-      One row per parameter and sample fraction. Sample fraction is part of the
-      parameter because filtered, total recoverable and dissolved results are
-      different measurements.
-    columns:
-      - name: parameter_key
-        description: "md5 hash of parameter and sample_fraction."
-        data_tests: [unique, not_null]
-      - name: parameter
-        data_tests: [not_null]
-      - name: sample_fraction
-        description: "'not reported' when the source leaves it empty."
-        data_tests: [not_null]
+    - name: dim_parameter
+      description: >
+        One row per parameter and sample fraction. Sample fraction is part of the
+        parameter because filtered, total recoverable and dissolved results are
+        different measurements.
+      columns:
+        - name: parameter_key
+          description: "md5 hash of parameter and sample_fraction."
+          data_tests: [unique, not_null]
+        - name: parameter
+          data_tests: [not_null]
+        - name: sample_fraction
+          description: "'not reported' when the source leaves it empty."
+          data_tests: [not_null]
