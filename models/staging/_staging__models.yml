@@ -15,7 +15,7 @@ models:
         description: "Date the sample was collected."
         data_tests: [not_null]
       - name: analysis_date
-        description: "Date the laboratory analysis started. Null for field measurements. The source mixes ISO dates and a Java-style date string; both are parsed here."
+        description: "Date the laboratory analysis started. Null when the source does not report it (2,114 of 2,980 results). The source mixes ISO dates and a Java-style date string; both are parsed here."
         data_tests:
           - analysis_not_before_collection:
               arguments:
@@ -42,25 +42,3 @@ models:
                 severity: warn
       - name: result_value
         description: "Measured value. Null when the result was not quantified (see detection_condition)."
-      - name: matrix
-        description: "Environmental matrix of the sample."
-        data_tests:
-          - accepted_values:
-              arguments:
-                values: ['water']
-
-  - name: stg_air_quality
-    description: "1:1 cleanup of the air quality source."
-    columns:
-      - name: sample_id
-        description: "Sample identifier in the source system."
-        data_tests: [unique, not_null]
-      - name: collected_date
-        description: "Date the sample was collected."
-        data_tests: [not_null]
-      - name: matrix
-        description: "Environmental matrix of the sample."
-        data_tests:
-          - accepted_values:
-              arguments:
-                values: ['air']

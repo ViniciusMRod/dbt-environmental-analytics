@@ -1,5 +1,0 @@
-sample_id,collected_at,site_code, parameter ,result_value,unit
-A-001,2025-01-20,ST-A,PM2.5,18.2,ug/m3
-A-002,2025-02-05,ST-B, pm2.5 ,24.9,ug/m3
-A-003,2025-03-18,ST-A,NO2,31.4,ug/m3
-A-004,2025-03-18,ST-B,NO2,12.0,ug/m3

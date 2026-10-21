@@ -34,8 +34,7 @@ renamed as (
         end                                              as unit,
         nullif(nullif(trim(result_resultdetectioncondition), ''), 'None') as detection_condition,
         (result_measure is not null)                     as is_quantified,
-        lower(trim(providername))                        as data_provider,
-        'water'                                          as matrix
+        lower(trim(providername))                        as data_provider
     from source
 
 )
