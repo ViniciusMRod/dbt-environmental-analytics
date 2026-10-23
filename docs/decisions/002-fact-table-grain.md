@@ -66,3 +66,8 @@ those are "Not Detected".
 - `sample_fraction` is in staging and in `dim_parameter`, with "not reported"
   when the source leaves it empty (49% of results).
 - Air quality was removed from the fact. It returns once its grain is decided.
+
+## Update (2026-10-20): air out of scope
+
+- Air quality is out of scope for v1 (see ADR 003). The fact table covers water
+  only, and the open question about the air grain is closed for this version.
