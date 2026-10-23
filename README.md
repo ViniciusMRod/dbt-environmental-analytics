@@ -1,17 +1,19 @@
 # Environmental Analytics — dbt on PostgreSQL
 
-A dbt portfolio project built on multi-matrix environmental data (groundwater,
-surface water, air). It runs 100% locally: PostgreSQL in Docker, dbt Core via pip.
-Anyone can clone it and run it in a few commands, with no cloud account and no trial.
+A dbt portfolio project on public water quality data from Lucas County, Ohio, on the
+western shore of Lake Erie. It runs 100% locally: PostgreSQL in Docker, dbt Core via
+pip. Anyone can clone it and run it in a few commands, with no cloud account and no
+trial.
 
-> **Current state:** water quality runs on a real extract from the Water Quality
-> Portal (Lucas County, OH, water media, 2020-2025, WQX 3.0 `basicPhysChem`
-> profile, pulled 2026-10-12 with `scripts/download_wqp.py`). The air quality seed
-> is still a smoke-test placeholder and will be replaced by an OpenAQ extract.
+> **Current state (v1):** water quality only, from a real extract of the Water
+> Quality Portal (Lucas County, OH, water media, 2020-2025, WQX 3.0 `basicPhysChem`
+> profile, pulled 2026-10-17 with `scripts/download_wqp.py`). Air quality is out of
+> scope for v1 (see ADR 003). Work in progress: incremental model justification,
+> CI and published docs.
 
-> **Note:** this is a multi-source composition built for portfolio purposes, not
-> an integrated monitoring network from a single client. The sources come from
-> different origins and regions.
+> **Scope note:** this is a portfolio project built on public data, not a client
+> monitoring network. It uses a single source, the Water Quality Portal, which
+> combines results from two providers: STORET and USGS.
 
 ---
 
@@ -34,7 +36,7 @@ dbt build
 ```
 
 `dbt build` runs seeds, models and tests in a single pass. Expected output for
-this version: `PASS=35 ERROR=0`.
+this version: `PASS=28 ERROR=0`.
 
 Documentation and lineage graph:
 
@@ -67,31 +69,50 @@ Alternatively, run everything inside WSL2, which is the lowest-friction path.
 ## Architecture
 
 ```
-seeds (CSV)  →  staging (view, 1:1 per source)  →  marts (table/incremental)  →  docs + BI
+seeds (CSV)  →  staging (view)  →  marts (star schema)  →  docs + BI
 ```
 
-- **`seeds/`** — sources are loaded as static CSVs via `dbt seed`. This is a
+- **`seeds/`** — the source is loaded as a static CSV via `dbt seed`. This is a
   deliberate decision: building a custom ingestion pipeline is a different skill
   and would dilute the focus on dbt. `scripts/download_wqp.py` documents how the
-  water seed was produced; it is not an ingestion pipeline.
-- **`models/staging/`** — one model per source. Cleanup only: trim, casing,
-  renaming, typing. No business logic.
+  seed was produced; it is not an ingestion pipeline.
+- **`models/staging/`** — cleanup only: trim, casing, renaming, typing, unit
+  normalization and parsing of the two date formats found in the source. No
+  business logic.
 - **`models/marts/`** — star schema. `fct_measurements` (grain: one row per
   measurement result) points to `dim_site` and `dim_parameter` (parameter +
-  sample fraction). The fact is incremental (`delete+insert` with a `unique_key`).
-  Air quality stays in staging until its grain is decided (ADR 002).
-- **`tests/`** — singular tests written in SQL. Generic tests (`unique`,
-  `not_null`, `accepted_values`) live in the `.yml` files next to the models.
+  sample fraction). The fact is incremental (`delete+insert` with a `unique_key`)
+  and has an enforced contract: declared column types, plus primary key and
+  not-null constraints on its keys.
+- **`tests/`** — a singular test in SQL and a custom generic test in
+  `tests/generic/` (`analysis_not_before_collection`: a lab cannot analyze a
+  sample before it was collected). Generic tests (`unique`, `not_null`,
+  `accepted_values`, `relationships`) live in the `.yml` files next to the
+  models.
+
+### Test severity policy
+
+- **`error`** protects the model: keys, relationships and impossible values stop
+  the build.
+- **`warn`** flags changes in the source: a new parameter, sample fraction or data
+  provider is reported, but does not block the build.
 
 ### Reading the lineage graph
 
-- **No `source()` in the DAG.** Sources are dbt seeds, so models use `ref()`.
-`source()` is for tables loaded outside dbt, which ADR 001 ruled out.
+- **No `source()` in the DAG.** The source is a dbt seed, so models use `ref()`.
+  `source()` is for tables loaded outside dbt, which ADR 001 ruled out.
 - **`dim_site` has no edge to the fact.** The fact keeps `site_code` as a
-natural key, and a `relationships` test enforces that every `site_code`
-exists in `dim_site`. dbt docs do not draw test dependencies.
-- **The air branch ends at staging** on purpose: air quality is a placeholder
-until a real OpenAQ extract is added.
+  natural key, and a `relationships` test enforces that every `site_code`
+  exists in `dim_site`. dbt docs do not draw test dependencies.
+
+## Decision log
+
+Architecture decisions live in `docs/decisions/`:
+
+- **ADR 001** — load the source as dbt seeds instead of building an ingestion
+  pipeline, and how the Lucas County extract was chosen.
+- **ADR 002** — grain of the fact table: one row per measurement result.
+- **ADR 003** — v1 scope is water quality only.
 
 ## Why dbt Core 1.x and not Fusion
 
@@ -107,12 +128,9 @@ dbt-postgres` pulls the 2.0 alpha and the project fails at parse time with
 - **`dbt seed --full-refresh` drops the staging views.** Dropping a seed table
   is a `cascade` in PostgreSQL and takes the dependent views with it. After a
   full refresh, run `dbt build` (or `dbt run`) before running a mart on its own.
-- **CSV columns with spaces in the name** (`" parameter "`) need double quotes
-  in SQL and in the `column_types` key. It is worth cleaning the CSV header at
-  the source.
 - **Dates as text.** Without `column_types` in `_seeds.yml`, dbt creates every
   column as `text`, and the incremental filter ends up comparing a string to a
-  date.git stat
+  date.
 - **Incremental model after a data swap.** `fct_measurements` only loads rows with
   a `collected_date` greater than the latest one already loaded. After replacing a
   seed, run `dbt build --full-refresh`, otherwise older rows are skipped silently
@@ -120,3 +138,10 @@ dbt-postgres` pulls the 2.0 alpha and the project fails at parse time with
 - **WQP non-detects.** About 3.6% of water results have no numeric value (mostly
   "Not Detected"). They are kept with a null value and a detection condition, not
   imputed.
+- **Partial responses from the portal.** The Water Quality Portal intermittently
+  returns only part of the USGS results for the same query. The download script
+  refuses to overwrite the seed with a smaller response (details in ADR 001).
+- **Two date formats in one column.** The lab analysis date mixes ISO dates and a
+  Java-style string (`Tue May 25 00:00:00 UTC 2021`). The seed keeps it as text,
+  and staging parses both. A parser for ISO only would leave 36 rows out of the
+  date test without any warning.
