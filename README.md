@@ -8,8 +8,7 @@ trial.
 > **Current state (v1):** water quality only, from a real extract of the Water
 > Quality Portal (Lucas County, OH, water media, 2020-2025, WQX 3.0 `basicPhysChem`
 > profile, pulled 2026-10-17 with `scripts/download_wqp.py`). Air quality is out of
-> scope for v1 (see ADR 003). Work in progress: incremental model justification,
-> CI and published docs.
+> scope for v1 (see ADR 003). Work in progress: CI and published docs.
 
 > **Scope note:** this is a portfolio project built on public data, not a client
 > monitoring network. It uses a single source, the Water Quality Portal, which
@@ -81,9 +80,10 @@ seeds (CSV)  →  staging (view)  →  marts (star schema)  →  docs + BI
   business logic.
 - **`models/marts/`** — star schema. `fct_measurements` (grain: one row per
   measurement result) points to `dim_site` and `dim_parameter` (parameter +
-  sample fraction). The fact is incremental (`delete+insert` with a `unique_key`)
-  and has an enforced contract: declared column types, plus primary key and
-  not-null constraints on its keys.
+  sample fraction). The fact is incremental (`delete+insert` on `result_id`,
+  reprocessing a 30-day lookback window, see ADR 004) and has an enforced
+  contract: declared column types, plus primary key and not-null constraints on
+  its keys.
 - **`tests/`** — a singular test in SQL and a custom generic test in
   `tests/generic/` (`analysis_not_before_collection`: a lab cannot analyze a
   sample before it was collected). Generic tests (`unique`, `not_null`,
@@ -113,6 +113,7 @@ Architecture decisions live in `docs/decisions/`:
   pipeline, and how the Lucas County extract was chosen.
 - **ADR 002** — grain of the fact table: one row per measurement result.
 - **ADR 003** — v1 scope is water quality only.
+- **ADR 004** — incremental fact with a 30-day lookback window.
 
 ## Why dbt Core 1.x and not Fusion
 
@@ -131,10 +132,10 @@ dbt-postgres` pulls the 2.0 alpha and the project fails at parse time with
 - **Dates as text.** Without `column_types` in `_seeds.yml`, dbt creates every
   column as `text`, and the incremental filter ends up comparing a string to a
   date.
-- **Incremental model after a data swap.** `fct_measurements` only loads rows with
-  a `collected_date` greater than the latest one already loaded. After replacing a
-  seed, run `dbt build --full-refresh`, otherwise older rows are skipped silently
-  and the build still passes.
+- **Late results older than the lookback window.** `fct_measurements` reprocesses
+  the last 30 days by collection date (ADR 004). A result that arrives with an
+  older collection date, or a replaced seed, needs `dbt build --full-refresh`;
+  otherwise it is skipped silently and the build still passes.
 - **WQP non-detects.** About 3.6% of water results have no numeric value (mostly
   "Not Detected"). They are kept with a null value and a detection condition, not
   imputed.
