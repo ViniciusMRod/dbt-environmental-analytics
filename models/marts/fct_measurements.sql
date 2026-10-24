@@ -16,8 +16,13 @@ with results as (
     select * from {{ ref('stg_water_quality') }}
 
     {% if is_incremental() %}
-    -- only process rows collected after the latest load (revisited in S4)
-    where collected_date > (select coalesce(max(collected_date), date '1900-01-01') from {{ this }})
+    -- Reprocess a lookback window, so results published late are still loaded.
+    -- delete+insert on result_id makes this idempotent: rows in the window are
+    -- deleted and reinserted, never duplicated.
+    where collected_date >= (
+        select coalesce(max(collected_date), date '1900-01-01') - {{ var('lookback_days', 30) }}
+        from {{ this }}
+    )
     {% endif %}
 
 ),
