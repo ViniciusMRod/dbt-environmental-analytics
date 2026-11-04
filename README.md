@@ -1,4 +1,5 @@
 # Environmental Analytics — dbt on PostgreSQL
+![dbt CI](https://github.com/ViniciusMRod/dbt-environmental-analytics/actions/workflows/dbt-ci.yml/badge.svg)
 
 A dbt portfolio project on public water quality data from Lucas County, Ohio, on the
 western shore of Lake Erie. It runs 100% locally: PostgreSQL in Docker, dbt Core via
@@ -8,7 +9,7 @@ trial.
 > **Current state (v1):** water quality only, from a real extract of the Water
 > Quality Portal (Lucas County, OH, water media, 2020-2025, WQX 3.0 `basicPhysChem`
 > profile, pulled 2026-10-17 with `scripts/download_wqp.py`). Air quality is out of
-> scope for v1 (see ADR 003). Work in progress: CI and published docs.
+> scope for v1 (see ADR 003). Work in progress: published docs.
 
 > **Scope note:** this is a portfolio project built on public data, not a client
 > monitoring network. It uses a single source, the Water Quality Portal, which
