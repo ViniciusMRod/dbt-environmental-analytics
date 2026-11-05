@@ -9,7 +9,8 @@ trial.
 > **Current state (v1):** water quality only, from a real extract of the Water
 > Quality Portal (Lucas County, OH, water media, 2020-2025, WQX 3.0 `basicPhysChem`
 > profile, pulled 2026-10-17 with `scripts/download_wqp.py`). Air quality is out of
-> scope for v1 (see ADR 003). Work in progress: published docs.
+> scope for v1 (see ADR 003). 
+> Docs and lineage graph: [viniciusmrod.github.io/dbt-environmental-analytics](https://viniciusmrod.github.io/dbt-environmental-analytics/).
 
 > **Scope note:** this is a portfolio project built on public data, not a client
 > monitoring network. It uses a single source, the Water Quality Portal, which
@@ -37,6 +38,9 @@ dbt build
 
 `dbt build` runs seeds, models and tests in a single pass. Expected output for
 this version: `PASS=28 ERROR=0`.
+
+Published docs, rebuilt on every push to `main`:
+https://viniciusmrod.github.io/dbt-environmental-analytics/
 
 Documentation and lineage graph:
 
