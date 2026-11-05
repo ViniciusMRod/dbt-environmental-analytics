@@ -1,0 +1,79 @@
+name: dbt docs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-docs:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: dbt
+          POSTGRES_DB: analytics
+        ports:
+          - 5434:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DBT_PROFILES_DIR: .
+      DBT_PG_HOST: localhost
+      DBT_PG_PORT: "5434"
+      DBT_PG_USER: postgres
+      DBT_PG_PASSWORD: dbt
+      DBT_PG_DBNAME: analytics
+      DBT_PG_SCHEMA: dbt_dev
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+          cache: pip
+
+      - name: Install dbt
+        run: pip install -r requirements.txt
+
+      - name: Build the project so the catalog has real tables
+        run: dbt build --full-refresh
+
+      - name: Generate static docs
+        run: dbt docs generate --static
+
+      - name: Prepare the site
+        run: |
+          mkdir site
+          cp target/static_index.html site/index.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build-docs
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
