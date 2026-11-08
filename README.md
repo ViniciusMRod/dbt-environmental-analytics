@@ -16,6 +16,27 @@ trial.
 > monitoring network. It uses a single source, the Water Quality Portal, which
 > combines results from two providers: STORET and USGS.
 
+## The problem
+
+Western Lake Erie has recurring cyanobacterial blooms, linked mainly to phosphorus
+and nitrogen loading from the Maumee River basin. Lucas County, Ohio, sits on that
+shoreline. Public water quality results for the county are available from the Water
+Quality Portal, but not in a shape an analyst can query directly:
+
+- Two providers, STORET and USGS, publish into the same feed, and the portal
+  intermittently returns only part of the USGS results.
+- The same parameter comes in different sample fractions and units. Filtered and
+  total recoverable iron, for example, are different measurements.
+- About 3.6% of results have no numeric value, mostly "Not Detected".
+- The lab analysis date mixes two formats, and a result can be published after
+  results with later collection dates.
+
+This project turns that feed into a tested star schema: one row per measurement
+result, with monitoring sites and parameters as dimensions. Questions such as "how
+do phosphorus results vary by site and year?" or "what share of nitrate results are
+non-detects?" become a simple query. v1 builds and tests that layer. It does not
+publish an analysis of the results.
+
 ---
 
 ## How to run
